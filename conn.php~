@@ -1,0 +1,5 @@
+<?php
+$conn=mysql_connect("localhost","user2303116","hhlljj88")or die("Connect server error".mysql_error());
+mysql_select_db("db2303116-myishare",$conn)or die("Connect database error".mysql_error());
+mysql_query("set names 'utf8'");
+?>

@@ -1,0 +1,40 @@
+<html>
+<body>
+
+	<form name="reg"action="register.php"method="post">
+		<table>
+			<tr>
+				<td>用户昵称：</td>
+				<td><input type="text"name="username"/></td>
+			</tr>
+			<tr>
+				<td>性别：</td>
+				<td><input type="radio"name="sex"value="M"checked/>男</td>
+				<td><input type="radio"name="sex"value="F"/>女</td>
+			</tr>
+			<tr>
+				<td>用户密码：</td>
+				<td><input type="password"name="pw1"/></td>
+			</tr>
+			<tr>
+				<td>确认密码：</td>
+				<td><input type="password"name="pw2"/></td>
+			</tr>
+			<tr>
+				<td>用户邮箱：</td>
+				<td><input type="text"name="email"/>&nbsp;</td>
+			</tr>
+			<tr>
+				<td><input type="submit"name="submit"value="提交注册"/></td>
+			</tr>
+                        <tr>
+                                <td>已有帐号？<a href=login.html>登录</a> </td>
+                        </tr>
+		</table>
+	</form>
+
+</body>
+
+</html>
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />

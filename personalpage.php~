@@ -1,0 +1,39 @@
+<?php
+$uid = $_GET["uid"];  echo $uid;
+//获取该id当前的对应头像
+include_once("conn.php");
+$user_info = "select username,signature,profile from is_user where id=$uid";
+$user_info_res = mysql_query($user_info,$conn)or die("fail to get personal information.".mysql_error());
+$current_head = mysql_result($user_info_res,0,'profile');
+$current_name = mysql_result($user_info_res,0,'username');
+$current_sign = mysql_result($user_info_res,0,'signature');
+
+$display_block = "
+<table>
+<tr>
+<td width=35% valign=top><img src='$current_head'width=250 height=250> <br> 
+</td>
+</tr>
+<tr>
+<p><a href='message.php?uid=$uid'>发送站内信给ta</a></p>
+</tr>
+</table>";
+
+?>
+
+
+<html>
+	<head>
+		<title>Personal Page</title>
+	</head>
+	<body>
+		<BODY background="image/background4.jpg">
+                <h1>个人主页</h1> 
+                <?php echo "$current_name( $current_sign )" ?>
+		<?php echo "$display_block" ?>
+                <p><a href='topiclist.php'>返回论坛</a></p>
+	</body>
+</html>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+

@@ -1,0 +1,26 @@
+<?php
+header("Content-type: text/html; charset=utf-8"); 
+include_once("conn.php");
+
+$queryString = $_SERVER['QUERY_STRING'];
+$query = "SELECT * FROM is_user";
+$result = mysql_query($query) or die("fail to query information.".mysql_error());
+//echo $queryString.":";
+	 
+while($row = mysql_fetch_array($result)){
+         //echo $row["activationKey"].":";
+	 if ($queryString == $row["activationKey"]){
+               
+	       //echo "恭喜！" . $row["username"] . " 已成为傻逼大家庭 ishare的一员.";   $row[\"username\"]
+               echo "<script>alert('恭喜！ 您已成为傻逼大家庭 ishare的一员.');window.location='login.html';</script>";
+	       $sql="UPDATE is_user SET activationkey = '', privilege='0' WHERE (id = $row[id])";
+	        if (!mysql_query($sql)) {
+	          die('Error: ' . mysql_error());
+	       }
+	        
+	        // 到这里，用户已经完全激活了账号，你可以将页面跳转到登陆后的界面了
+	 }
+} // end of while
+
+?>
+

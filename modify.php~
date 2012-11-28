@@ -1,0 +1,121 @@
+<?php
+//connect to server and select database; we'll need it soon
+include_once("conn.php");
+
+//check to see if we're showing the form or adding the post
+if ($_POST[op] != "modifypost") {
+	// showing the form; check for required item in query string
+	/*if (!$_GET[post_id]) {
+		header("Location: topiclist.php");
+		exit;
+	}*/
+
+        //获取reply_post_id 和 topic_id
+        $topic_id=$_GET["topic_id"]; //echo $topic_id;
+	$reply_post_id=$_GET["reply_post_id"];  //echo $reply_post_id;
+
+        //获取reply_post_id的发帖者username
+        $get_reply = "select post_owner,post_text from forum_reply_posts where reply_post_id=$reply_post_id";
+        $get_reply_res = mysql_query($get_reply,$conn)or die("fail to get the replypost owner's name.".mysql_error());
+        $reply_post_owner = mysql_result($get_reply_res,0,'post_owner');
+        $reply_post_text = mysql_result($get_reply_res,0,'post_text');    
+
+        //生成回复帖的前缀
+        $reply_prefix = $reply_post_text;
+
+	//still have to verify topic and post
+	$verify = "select ft.topic_id, ft.topic_title from forum_reply_posts as fp left join forum_topics as ft on fp.topic_id = ft.topic_id where fp.reply_post_id = $_GET[reply_post_id]";
+
+	$verify_res = mysql_query($verify, $conn) or die(mysql_error());
+	if (mysql_num_rows($verify_res) < 1) {
+		//this post or topic does not exist
+		header("Location: topiclist.php");
+		exit;
+	} else {
+		//get the topic id and title
+		$topic_id = mysql_result($verify_res,0,'topic_id');
+		$topic_title = stripslashes(mysql_result($verify_res, 0,'topic_title'));
+                
+		echo "
+		<html>
+		<head>
+		<title>Modify Your Reply in $topic_title</title>
+		</head>
+		<body>
+		<h1>修改主题 \"$topic_title\" 的回帖</h1>
+		<form method=post action=\"$_SERVER[PHP_SELF]\">
+		<!--
+		<p><strong>Your E-Mail Address:</strong><br>
+		<input type=\"text\" name=\"post_owner\" size=40 maxlength=150>
+		-->
+
+		<P><strong>留言:</strong><br>
+		<textarea name=\"post_text\" rows=8 cols=40 wrap=virtual>$reply_prefix</textarea>
+
+		<input type=\"hidden\" name=\"op\" value=\"modifypost\">
+		<input type=\"hidden\" name=\"topic_id\" value=\"$topic_id\">               <!--收集当前topic_id -->
+                <input type=\"hidden\" name=\"topic_title\" value=\"$topic_title\">         <!--收集当前topic_title -->
+                <input type=\"hidden\" name=\"reply_to\" value=\"$reply_post_owner\">       <!--收集回复对象 -->
+                <input type=\"hidden\" name=\"reply_post_id\" value=\"$reply_post_id\">     <!--收集回复对象id -->
+                
+		<P><input type=\"submit\" name=\"submit\" value=\"修改\"></p>
+                <P><a href=showtopic.php?topic_id=$topic_id>返回主题</a></p>
+
+		</form>
+		</body>
+		</html>";
+	}
+}elseif ($_POST[op] == "modifypost") {
+        
+	session_start();//start session
+        if(isset($_SESSION["admin"]) && $_SESSION["admin"]==true){ //login successfully
+		$modified_by=$_SESSION["adminname"];
+		//check for required items from form
+		if ((!$_POST[topic_id]) || (!$_POST[post_text])) {
+			header("Location: topiclist.php");
+			exit;
+		}
+
+                //check privilege
+                $check_privilege="select privilege from is_user where username='$modified_by'";
+                $check_privilege_res=mysql_query($check_privilege,$conn)or die("checking privilege fails.".mysql_error());
+                $current_privilege=mysql_result($check_privilege_res,0,'privilege');
+                //  echo $current_privilege;
+                //  echo "Sorry, you do not have the privilege to delete this!"
+	
+               if($current_privilege>-1){ // 已激活帐号 
+                     //获取reply_post_id
+                     $reply_post_id = $_POST[reply_post_id]; 
+                     $reply_post_owner = $_POST[reply_post_owner];                    
+ 
+                     if($modified_by == $reply_post_owner){ // 是回帖本人
+	                     //modify the post//执行修改
+		             $modify_post = "update `forum_reply_posts` set `post_text`='$_POST[post_text]',`post_modify_time`=now() where reply_post_id =$reply_post_id";
+		             mysql_query($modify_post,$conn) or die(mysql_error());
+
+		             //redirect user to topic
+		             echo "<script>alert('修改成功！');window.location='showtopic.php?topic_id=$_POST[topic_id]';</script>";
+                     }elseif($current_privilege>2){// 符合管理员（版主）权限
+                             //modify the post//执行修改
+		             $modify_post = "update `forum_reply_posts` set `post_text`='$_POST[post_text]',`post_modify_time`=now() where reply_post_id =$reply_post_id ";
+		             mysql_query($modify_post,$conn) or die(mysql_error());
+
+		             //redirect user to topic
+		             echo "<script>alert('您以超级管理员身份，修改帖子成功！');window.location='showtopic.php?topic_id=$_POST[topic_id]';</script>";
+                     }else{
+                            echo "<script>alert('对不起，您无权修改此帖！');window.location='showtopic.php?topic_id=$_POST[topic_id]';</script>";
+                     }//End if     
+                }else{ 
+	             //echo "对不起，您尚未激活帐号！";
+                     echo "<script>alert('对不起，您尚未激活帐号！');window.location='showtopic.php?topic_id=$_POST[topic_id]';</script>";
+                }
+	}else{
+		$_SESSION["admin"]=false;
+		die("Sorry, you have not login. <a href=login.html>Login</a>");
+	}
+
+} 
+
+?>
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />

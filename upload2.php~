@@ -1,0 +1,93 @@
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<?php
+include_once("conn.php");
+if(empty($_GET[submit]))
+{
+?>
+  
+<form enctype="multipart/form-data" action="<?php $_SERVER['PHP_SELF']?>?submit=1" method="post">
+图片文件: <input name="filename" type="file">
+<input type="submit" value="上传">
+<p><a href=topiclist.php>返回论坛</a> </p>
+</form>
+
+<?php
+
+}else{
+	session_start(); //start session
+	if(isset($_SESSION["admin"]) && $_SESSION["admin"]==true){ //login successfully
+		$post_owner = $_SESSION["adminname"];
+                
+                //获取当前id
+                $get_id = "select id from is_user where username='$post_owner'";
+                $get_id_res = mysql_query($get_id,$conn)or die("Could not get the personal information.".mysql_error());
+                $currentuid = mysql_result($get_id_res,0,'id'); //echo $currentuid;
+
+                //check privilege
+                $check_privilege="select privilege from is_user where username='$post_owner'";
+                $check_privilege_res=mysql_query($check_privilege,$conn)or die("checking privilege fails.".mysql_error());
+                $current_privilege=mysql_result($check_privilege_res,0,'privilege');
+                //  echo $current_privilege;
+                //  echo "Sorry, you do not have the privilege to delete this!";
+
+                
+                if($current_privilege>-1){ // 已激活帐号
+
+                          //执行上传   
+                          $path="upload/uploadprofile/"; //上传路径
+                          // echo $_FILES["filename"]["type"];
+                          
+                          if(!file_exists($path))
+                          {
+                          //检查是否有该文件夹，如果没有就创建，并给予最高权限
+                          	if(mkdir("$path", 0777)){
+                          		echo "create dir!!";
+                          	}else{
+                          		echo "fail to create dir!!";
+                          	}
+                          }//END IF
+                          //允许上传的文件格式
+                          $tp = array("image/gif","image/jpeg","image/png","image/jpg","imag/bmp");
+                          //检查上传文件是否在允许上传的类型
+                          if(!in_array($_FILES["filename"]["type"],$tp))
+                          {
+                          echo "<script>alert('图片格式不正确！');history.back();</script>";                      
+                          }//END IF
+                          if($_FILES["filename"]["name"])
+                          {
+                          $file1=$_FILES["filename"]["name"];
+                          $file2 = $path.time().$file1;
+                          //echo $file2;
+                          echo $_FILES["filename"]["tmp_name"];
+                          $flag=1;
+                          }//END IF
+                          if($flag) $result=move_uploaded_file($_FILES["filename"]["tmp_name"],$file2);
+                          //特别注意这里传递给move_uploaded_file的第一个参数为上传到服务器上的临时文件
+                          if($result)
+                          {
+                          //echo "上传成功!".$file2;
+                          //$postowner="yayaya";
+                          //include_once("conn.php");
+                          $updatesql = "UPDATE `is_user` SET `profile`='$file2' WHERE username='$post_owner'";
+                          $updateprofile = mysql_query($updatesql) or die(mysql_error());
+                          
+                          echo "<script>alert('上传成功！');window.location='setting.php?currentuid=$currentuid';</script>";
+                           
+                          }else{
+                          	echo "<font color='red'> upload failure! </a>";
+                          }//END IF
+
+                }else{ 
+	             //echo "对不起，您尚未激活帐号！";
+                     echo "<script>alert('对不起，您尚未激活帐号！');window.location='setting.php?currentuid=$currentuid';</script>";
+                }
+	}else{
+		$_SESSION["admin"]=false;
+		die("Sorry, you have not login. <a href=login.html>Login</a>");
+	}
+
+
+}
+
+?>
+

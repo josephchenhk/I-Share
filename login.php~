@@ -1,0 +1,33 @@
+<?php
+include_once("conn.php");
+//start a new conversation
+//session_start();
+//declare a variable "admin", and initialize it as null
+//$_SESSION["admin"]=null;
+?>
+
+<?php
+if($_POST["submit"]) { //submit login
+	$posts=$_POST;
+	// trim space
+	foreach($posts as $key => $value){
+		$posts[$key]=trim($value);
+	}
+	$password=$posts["pw"];
+	$username=$posts["username"];
+
+	$logsql="select username from is_user where username='$username' and password='$password'";
+	$logres=mysql_query($logsql);
+
+	if(mysql_num_rows($logres)==1) { // verified, start session
+		session_start();
+		//set "admin" as true
+		$_SESSION["admin"]=true;
+		$_SESSION["username"]=$username;
+		echo "<script>alert('登录成功！');window.location='topiclist.php';</script>";
+	}else {
+		die("login error!");
+	}
+}
+?>
+

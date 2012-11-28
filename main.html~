@@ -1,0 +1,18 @@
+<?php
+$display_block = "
+        <a href=register.html>Register</a>
+	<a href=login.html>Login</a>";
+?>
+
+<html>
+<head> 
+	<title> ishare </title>
+</head>
+
+<body> 
+	<h1> Welcome to ishare!</h1>
+	<?php 
+	echo $display_block;
+	?>
+</body>
+</html>

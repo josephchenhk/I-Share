@@ -1,0 +1,10 @@
+<html>
+	<head>
+		<title>Personal Settings</title>
+	</head>
+	<body>
+		<h1>Personal Settings</h1>
+		<p><a href='upload2.php'>Upload head figure</a>
+		</p>
+	</body>
+</html>

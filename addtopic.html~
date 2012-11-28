@@ -1,0 +1,20 @@
+<html>
+<head>
+<title>Add a Topic</title>
+</head>
+<body>
+<h1>发表新话题</h1>
+<p><strong><a href=topiclist.php>返回论坛</a></strong><br>
+<form method=post action="do_addtopic.php">
+<!--<p><strong>Your E-Mail Address:</strong><br>
+<input type="text" name="topic_owner" size=40 maxlength=150> -->
+<p><strong>标题:</strong><br>
+<input type="text" name="topic_title" size=40 maxlength=150>
+<P><strong>内容:</strong><br>
+<textarea name="post_text" rows=28 cols=80 wrap=virtual></textarea>
+<P><input type="submit" name="submit" value="发表"></p>
+</form>
+</body>
+</html>
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />

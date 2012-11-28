@@ -1,0 +1,122 @@
+<?php
+//connect to server and select database; we'll need it soon
+include_once("conn.php");
+
+//check to see if we're showing the form or adding the post
+if ($_POST[op] != "addpost") {
+	// showing the form; check for required item in query string
+	/*if (!$_GET[post_id]) {
+		header("Location: topiclist.php");
+		exit;
+	}*/
+
+        //获取post_id 和 topic_id
+        $topic_id=$_GET["topic_id"]; //echo $topic_id;
+	$post_id=$_GET["post_id"];  //echo $post_id;
+
+        //获取post_id的发帖者username
+        $get_reply = "select post_owner,post_text from forum_posts where post_id=$post_id";
+        $get_reply_res = mysql_query($get_reply,$conn)or die("fail to get the replypost owner's name.".mysql_error());
+        $reply_post_owner = mysql_result($get_reply_res,0,'post_owner');
+        $reply_post_text = mysql_result($get_reply_res,0,'post_text');    
+
+        //生成回复帖的前缀
+        $reply_prefix = "回复".$reply_post_owner."(".$reply_post_text."):\n";
+
+	//still have to verify topic and post
+	$verify = "select ft.topic_id, ft.topic_title from forum_posts as fp left join forum_topics as ft on fp.topic_id = ft.topic_id where fp.post_id = $_GET[post_id]";
+
+	$verify_res = mysql_query($verify, $conn) or die(mysql_error());
+	if (mysql_num_rows($verify_res) < 1) {
+		//this post or topic does not exist
+		header("Location: topiclist.php");
+		exit;
+	} else {
+		//get the topic id and title
+		$topic_id = mysql_result($verify_res,0,'topic_id');
+		$topic_title = stripslashes(mysql_result($verify_res, 0,'topic_title'));
+
+		echo "
+		<html>
+		<head>
+		<title>Post Your Reply in $topic_title</title>
+		</head>
+		<body>
+		<h1>回复主题 \"$topic_title\"</h1>
+		<form method=post action=\"$_SERVER[PHP_SELF]\">
+		<!--
+		<p><strong>Your E-Mail Address:</strong><br>
+		<input type=\"text\" name=\"post_owner\" size=40 maxlength=150>
+		-->
+
+		<P><strong>留言:</strong><br>
+		<textarea name=\"post_text\" rows=8 cols=40 wrap=virtual>$reply_prefix</textarea>
+
+		<input type=\"hidden\" name=\"op\" value=\"addpost\">
+		<input type=\"hidden\" name=\"topic_id\" value=\"$topic_id\">               <!--收集当前topic_id -->
+                <input type=\"hidden\" name=\"topic_title\" value=\"$topic_title\">         <!--收集当前topic_title -->
+                <input type=\"hidden\" name=\"reply_to\" value=\"$reply_post_owner\">       <!--收集回复对象 -->
+
+		<P><input type=\"submit\" name=\"submit\" value=\"回复\"></p>
+
+                <P><a href=showtopic.php?topic_id=$topic_id>返回主题</a></p>
+		</form>
+		</body>
+		</html>";
+	}
+} else if ($_POST[op] == "addpost") {
+        
+
+	session_start();//start session
+        if(isset($_SESSION["admin"]) && $_SESSION["admin"]==true){ //login successfully
+		$post_owner=$_SESSION["adminname"];
+		//check for required items from form
+		if ((!$_POST[topic_id]) || (!$_POST[post_text])) {
+			header("Location: topiclist.php");
+			exit;
+		}
+
+                //check privilege
+                $check_privilege="select privilege from is_user where username='$post_owner'";
+                $check_privilege_res=mysql_query($check_privilege,$conn)or die("checking privilege fails.".mysql_error());
+                $current_privilege=mysql_result($check_privilege_res,0,'privilege');
+                //  echo $current_privilege;
+                //  echo "Sorry, you do not have the privilege to delete this!";
+
+		//执行回复
+                if($current_privilege>-1){ // 已激活帐号
+
+		        //add the post
+		        $add_post = "insert into forum_reply_posts values ('', '$_POST[topic_id]', '$_POST[post_text]', now(), '$post_owner','')";
+		        mysql_query($add_post,$conn) or die("fail to add topic.".mysql_error());
+
+                        //更新forum_topics的最新回帖时间
+                        $reflesh_topic = "update `forum_topics` set `topic_modify_time`=now() where topic_id=$_POST[topic_id]";
+		        mysql_query($reflesh_topic) or die("Fail to reflesh the topic.".mysql_error());
+
+                        //自动发送站内信给对方，提醒
+                        $topic_id = $_POST[topic_id];          //收集topic_id
+                        $reply_to = $_POST[reply_to];          //收集回复对象
+                        $topic_title = $_POST[topic_title];    //收集回复主题
+                        //$msg = "http://147.8.166.94/ishare/showtopic.php?topic_id=$topic_id";
+                        $msg = $topic_id; 
+                        $title = $topic_title;
+                        $send_msg = "insert into message values ('', '$msg', '$title','$post_owner','$reply_to')";
+		        mysql_query($send_msg,$conn) or die("could not send message.".mysql_error());
+
+		        //redirect user to topic
+		        echo "<script>alert('回复成功！');window.location='showtopic.php?topic_id=$_POST[topic_id]';</script>";
+                
+                }else{ 
+	             //echo "对不起，您尚未激活帐号！";
+                     echo "<script>alert('对不起，您尚未激活帐号！');window.location='showtopic.php?topic_id=$_POST[topic_id]';</script>";
+                } 
+	}else{
+		$_SESSION["admin"]=false;
+		die("Sorry, you have not login. <a href=login.html>Login</a>");
+	}
+
+}
+?>
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />

@@ -1,0 +1,73 @@
+<?php //read_msg_send.php实现显示个人站内信发件箱内容
+include_once("conn.php");
+
+//获取$prv_msgid
+$prv_msgid = $_GET[prv_msgid];
+
+//gather the information of messages
+$get_msg = "select msg,title,sendtime,sender,receiver from prv_message where prv_msgid=$prv_msgid";
+$get_msg_res = mysql_query($get_msg,$conn)or die("Could not get the information of sent message.".mysql_error());
+$msg = mysql_result($get_msg_res,0,'msg');
+$title = mysql_result($get_msg_res,0,'title');
+$sendtime = mysql_result($get_msg_res,0,'sendtime');
+$sender = mysql_result($get_msg_res,0,'sender');   
+$receiver = mysql_result($get_msg_res,0,'receiver'); 
+
+//获取个人信息
+session_start();//start session
+if(isset($_SESSION["admin"]) && $_SESSION["admin"]==true){ //login successfully
+	$currentuser=$_SESSION["adminname"];      
+
+        if($currentuser==$sender){  //无权查看别人的站内信，只能查看属于自己的站内信
+
+                //获取收信者的uid
+                $get_id = "select id from is_user where username='$receiver'";
+                $get_id_res = mysql_query($get_id,$conn)or die("Could not get the information of receiver.".mysql_error());
+                $uid = mysql_result($get_id_res,0,'id'); //echo $uid;
+
+                //create the display string
+        	$display_block = "
+                
+        	<table cellpadding=5 cellspacing=4 border=1>
+        	<tr>
+        	<td>$sendtime 发送给 $receiver 的站内信 <br>
+                    《 $title 》： <br>
+                     $msg <br>
+                     <a href=message.php?uid=$uid> 继续写信 </a>
+                </td>
+        	</tr>
+                </table>";
+
+        }else{
+              $display_block = "
+                
+        	<table cellpadding=5 cellspacing=4 border=1>
+        	<tr>
+        	<td> 您无权查看别人的站内信！</td>
+        	</tr>
+                </table>";
+        }       
+        
+}else{
+	$_SESSION["admin"]=false;
+	die("Sorry, you have not login. <a href=login.html>Login</a>");
+}
+
+?>
+<html>
+<head>
+<title>Private Message</title>
+</head>
+<body>
+<BODY background="image/background4.jpg">
+<h1>站内信</h1>
+<p>
+<a href=msg_receivelist.php>收件箱</a>
+<a href=msg_sendlist.php>发件箱</a>
+<a href=topiclist.php>返回论坛</a>
+</p>
+<?php echo $display_block; ?>
+</body>
+</html>
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />

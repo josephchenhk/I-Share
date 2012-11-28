@@ -1,0 +1,94 @@
+<?php //message.php实现发送和接收私信功能
+include_once("conn.php");
+
+if ($_POST[op] != "sendmsg") {
+
+        //获取收信者id
+        $receiver_id=$_GET["uid"]; //echo $receiver_id;
+	
+        //获取收信者的相关信息
+        $get_info = "select username from is_user where id=$receiver_id";
+        $get_info_res = mysql_query($get_info,$conn)or die("fail to get the receiver's name.".mysql_error());
+        $receiver = mysql_result($get_info_res,0,'username');
+                
+		echo "
+		<html>
+		<head>
+		<title>message to $receiver</title>
+		</head>
+		<body>
+		<h1>发送站内信给 \"$receiver\"</h1>
+		<form method=post action=\"$_SERVER[PHP_SELF]\">
+
+		<p><strong>标题:</strong><br>
+                <input type=\"text\" name=\"topic\"  size=40 maxlength=150>
+		<P><strong>内容:</strong><br>
+		<textarea name=\"post_text\" rows=28 cols=80 wrap=virtual> </textarea>
+
+		<input type=\"hidden\" name=\"op\" value=\"sendmsg\">
+                <input type=\"hidden\" name=\"receiver\" value=\"$receiver\">               <!--收集接收者username -->
+                <input type=\"hidden\" name=\"receiver_id\" value=\"$receiver_id\">         <!--收集接收者uid -->
+                
+		<P><input type=\"submit\" name=\"submit\" value=\"发送\"></p>
+                <P><a href=showtopic.php?topic_id=$topic_id>返回主题</a></p>
+
+		</form>
+		</body>
+		</html>";
+	
+}elseif ($_POST[op] == "sendmsg") {
+        
+	session_start();//start session
+        if(isset($_SESSION["admin"]) && $_SESSION["admin"]==true){ //login successfully
+		$sender=$_SESSION["adminname"];
+                //check for required items from form
+		if ((!$_POST[topic]) || (!$_POST[post_text])) {
+			header("Location: topiclist.php");
+			exit;
+		}
+
+                //check privilege
+                $check_privilege="select privilege from is_user where username='$sender'";
+                $check_privilege_res=mysql_query($check_privilege,$conn)or die("checking privilege fails.".mysql_error());
+                $current_privilege=mysql_result($check_privilege_res,0,'privilege');
+                if($current_privilege>-1){ // 已激活帐号 
+                     //获取收信者信息
+                     $receiver = $_POST[receiver];  
+                     $receiver_id = $_POST[receiver_id]; 
+
+                     //检查接收id的用户是否存在
+                     $check_receiver="select count(*) from is_user where id=$receiver_id";
+                     $check_receiver_res=mysql_query($check_receiver,$conn)or die("checking receiver fails.".mysql_error());
+                     $r = mysql_fetch_row($check_receiver_res);
+                     $record = $r[0];
+  
+                     if($record!=0){
+                     
+                           if($sender==$receiver){
+                                  echo "<script>alert('您给自己发站内信做什么？');window.location='personalpage.php?uid=$receiver_id';</script>";        
+                           }else{        
+
+                                  //send msg//执行发送 
+                                  $send_msg = "INSERT INTO `prv_message`(`prv_msgid`, `msg`, `title`, `sendtime`, `sender`, `receiver`) VALUES ('','$_POST[post_text]','$_POST[topic]',now(),'$sender','$receiver')";
+		                  mysql_query($send_msg,$conn) or die("fail to send msg.".mysql_error());   
+                     
+                                  //redirect user to topic
+		                  echo "<script>alert('发送成功！');window.location='personalpage.php?uid=$receiver_id';</script>";  
+                           }
+                     }else{
+                            echo "<script>alert('对不起，暂无此用户！');history.back();</script>";          
+                     } 
+                }else{ 
+	             //echo "对不起，您尚未激活帐号！";
+                     echo "<script>alert('对不起，您尚未激活帐号！');history.back();</script>"; 
+                }
+	}else{
+		$_SESSION["admin"]=false;
+		die("Sorry, you have not login. <a href=login.html>Login</a>");
+	}
+
+} 
+
+?>
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />

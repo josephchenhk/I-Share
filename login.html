@@ -1,0 +1,63 @@
+<html>
+<head>
+<title> ishare login </title>
+<style>
+body {        /*重新定义body体的格式*/
+margin:0px; padding:0px;
+background-color:rgb(245%,222%,179%);
+font-family:Arial, Helvetica, sans-serif;
+}
+#container {   /*定义id = #container的格式*/
+/* background:url(images/background_main.jpg) no-repeat; */
+min-height:670px;
+width:1300px;
+position:relative;  /*注意这里是相对位置 */
+}
+#loginbg {
+position:absolute; top:20px; left:270px; 
+background-image: url(images/registerbg.jpg);
+background-repeat: no-repeat;
+height: 500px;
+width:630px;
+}
+#login { position:absolute; top:252px; left:490px; }
+#logo { position:absolute; top:30px; left:30px; }
+#logotext { position:absolute; top:60px; left:150px; }
+</style>
+</head>
+
+<body>
+<div id="container">
+
+<a href="#"><img src="images/logo.jpg" id="logo" /></a>  <!--将logo摆进来，其位置在#logo中已进行定义 -->
+<a href="#"><img src="images/logotext.gif" id="logotext" /></a>  <!--将logotext摆进来，其位置在#logotext中已进行定义 -->
+<div id="loginbg"> <!--放入registerbg容器，显示登录框背景 -->
+</div> <!--结束registerbg容器 -->
+
+<div id="login">
+		<form name="log"action="login.php"method="post">
+			<table>
+				<tr>
+					<td>用户昵称：<input type="text"name="username"size=15/></td>
+				</tr>
+				<tr>
+					<td>用户密码：<input type="password"name="pw"size=15 /></td>
+				</tr>
+				<tr>
+					<td><input type="submit"name="submit"value="登录"/></td>
+				</tr>
+                                <tr>
+                                        <td>还没有帐号？<a href=register.html>注册</a> </td> <br>
+                                </tr>
+                                <tr>
+                                        <td><a href=index.html> 返回首页</a> </td>
+                                </tr>
+			</table>
+		</form>
+</div>
+</div>
+
+</body>
+</html>
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />

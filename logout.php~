@@ -1,0 +1,7 @@
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<?php
+session_start();
+unset($_SESSION['admin']);
+session_destroy();
+echo "<script>alert('您已成功退出！');window.location='topiclist.php';</script>";
+?>

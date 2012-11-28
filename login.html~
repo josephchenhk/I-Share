@@ -1,0 +1,29 @@
+<html>
+<head>
+<style>
+table{margin:auto; }
+</style>
+</head>
+	<body background="image/background4.jpg">
+		<form name="log"action="login.php"method="post">
+			<table>
+				<tr>
+					<td>用户昵称：</td>
+					<td><input type="text"name="username"/></td>
+				</tr>
+				<tr>
+					<td>用户密码：</td>
+					<td><input type="password"name="pw"/></td>
+				</tr>
+				<tr>
+					<td><input type="submit"name="submit"value="登录"/></td>
+				</tr>
+                                <tr>
+                                        <td>还没有帐号？<a href=register.html>注册</a> </td>
+                                </tr>
+			</table>
+		</form>
+	</body>
+</html>
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />

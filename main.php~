@@ -1,0 +1,22 @@
+<?php
+$display_block = "
+        <a href=register.html>注册</a>
+	<a href=login.html>登录</a>";
+?>
+
+<html>
+<head> 
+	<title> ishare </title>
+</head>
+
+<body>  
+        <BODY background="image/background2.jpg">
+	<h1> Welcome to ishare!</h1>
+        <p><em> 未满18周岁，禁止入内。你懂的。</em></p>
+	<?php 
+	echo $display_block;
+	?>
+</body>
+</html>
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
